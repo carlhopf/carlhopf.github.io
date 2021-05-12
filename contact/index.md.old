@@ -1,0 +1,47 @@
+---
+title: Contact
+date: 2016-08-05 15:58:00
+noauthor: true
+---
+
+I'm always up to talk about the web and the world. Type a me message:
+
+<form class="contact"><p><input type="text" id="contact_email" name="email" placeholder="Email"/></p><p><textarea id="contact_message" name="message" placeholder="Message"/></textarea></p><p><input type="button" id="contact_submit" value="Send"></p></form>
+
+Or reach out to me at: [contact@carlhopf.com](mailto:contact@carlhopf.com?subject=Contact form)
+
+<script>
+	(function () {
+		var elSubmit = document.getElementById('contact_submit');
+		var elMessage = document.getElementById('contact_message');
+		var elEmail = document.getElementById('contact_email');
+
+		var url = 'https://script.google.com/macros/s/AKfycby-tI4OO0FGFBf7bJb8YHq2Uurx6v05squ8ir8HUKqt6euQ17I/exec';
+
+		elSubmit.addEventListener('click', function () {
+			var message = elMessage.value;
+			var email = elEmail.value;
+
+			if (message.length === 0) return;
+			if (email.length === 0) return;
+
+			window.contact_callback = function (result) {
+				elMessage.value = '';
+				elSubmit.disabled = '';
+				elSubmit.value = 'Sent!';
+			};
+
+			elSubmit.disabled = 'true';
+			elSubmit.value = 'Sending...';
+
+			// google apps script only supports jsonp
+			var script = document.createElement('script');
+
+			script.src = url + '?' +
+				'email=' + encodeURIComponent(email) + '&' +
+				'message=' + encodeURIComponent(message);
+
+			document.getElementsByTagName('head')[0].appendChild(script);
+		});
+	})();
+</script>

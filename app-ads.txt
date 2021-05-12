@@ -1,0 +1,4 @@
+google.com, pub-8946379895668325, DIRECT, f08c47fec0942fa0
+mopub.com, 9a2876bef22d45a1bc8f689f4dc3d7a2, DIRECT, 74b46c0ea83967ca
+ironsrc.com, 261473, DIRECT, 79929e88b2ba73bc
+

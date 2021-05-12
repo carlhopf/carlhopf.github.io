@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Carl Hopf</title>
+  <meta name="viewport" content="width=device-width">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Carl Hopf">
+<meta property="og:url" content="https://carlhopf.com/blog/index.html">
+<meta property="og:site_name" content="Carl Hopf">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="Carl Hopf">
+<meta name="twitter:card" content="summary">
+  
+  
+    <link rel="icon" href="/res/favicon.png">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <div id="container">
+    <div class="mobile-nav-panel">
+	<i class="icon-reorder icon-large"></i>
+</div>
+<header id="header">
+	<h1 class="blog-title">
+		<a href="/">Carl Hopf</a>
+	</h1>
+	<nav class="nav">
+		<ul>
+			
+			<li>
+				<div class="wrap">
+					<a href="/">Home</a>
+				</div>
+			</li>
+			
+			<li>
+				<div class="wrap">
+					<a href="/contact/">Contact</a>
+				</div>
+			</li>
+			
+			
+			
+		</ul>
+	</nav>
+	<div id="search-form-wrap">
+		<form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://carlhopf.com"></form>
+	</div>
+</header>
+
+    <div id="main">
+      
+  
+    <article id="post-blog-tensorflow-install" class="post">
+	<footer class="entry-meta-header">
+		<span class="meta-elements date">
+			<a target="_blank" rel="noopener" href="//tensorflow-install-ubuntu-16.04/" class="article-date">
+  <time datetime="2016-10-18T22:00:00.000Z" itemprop="datePublished">2016-10-18</time>
+</a>
+		</span>
+		
+		<span class="meta-elements author">Carl Hopf</span>
+		
+		<div class="commentscount">
+			
+		</div>
+	</footer>
+	
+	<header class="entry-header">
+		
+  
+    <h1 itemprop="name" class="entry-title">
+      <a class="article-title" href="/tensorflow-install-ubuntu-16.04/">
+        Tensorflow on Ubuntu 16.04, Cuda 8.0 + Cudnn + OpenCV
+      </a>
+    </h1>
+  
+
+
+	</header>
+	<div class="entry-content">
+		
+    	<p>These are the steps required, to install tensorflow r0.11 with GPU support on a fresh install of ubuntu 16.04. Some credits go to <a target="_blank" rel="noopener" href="https://alliseesolutions.wordpress.com/2016/09/08/install-gpu-tensorflow-from-sources-w-ubuntu-16-04-and-cuda-8-0-rc/">Justin</a>, for his wonderful tutorial.</p>
+<p>Compiling the current <a target="_blank" rel="noopener" href="https://github.com/opencv/opencv/commit/157a90ac465062929248bddddf9b1526b6bb7529">opencv/master</a> at this point resulted in cuda errors when running tensorflow. The solution was to use the latest opencv 2.4.13 release instead.</p>
+<h2 id="Prerequisites"><a href="#Prerequisites" class="headerlink" title="Prerequisites"></a>Prerequisites</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install git screen vim python-numpy swig python-dev python-wheel python-pip unzip</span><br></pre></td></tr></table></figure>
+
+<h2 id="Prepare-for-nvidia-driver-install"><a href="#Prepare-for-nvidia-driver-install" class="headerlink" title="Prepare for nvidia driver install"></a>Prepare for nvidia driver install</h2><p>Disable nouveau, create</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/modprobe.d/blacklist-nouveau.conf</span><br></pre></td></tr></table></figure>
+
+<p>with content</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">blacklist nouveau</span><br><span class="line">options nouveau modeset=0</span><br></pre></td></tr></table></figure>
+
+<p>and then</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo update-initramfs -u</span><br><span class="line">sudo reboot</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Cuda-toolkit-8-0"><a href="#Cuda-toolkit-8-0" class="headerlink" title="Cuda toolkit 8.0"></a>Cuda toolkit 8.0</h2><p>Download <a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-toolkit">cuda toolkit</a> 8.0 for 16.04</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://developer.nvidia.com/compute/cuda/8.0/prod/local_installers/cuda_8.0.44_linux-run</span><br></pre></td></tr></table></figure>
+
+<p>Before installing, stop the GUI to allow nvidia driver installation</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo service lightdm stop</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo sh cuda_8.0.44_linux.run</span><br></pre></td></tr></table></figure>
+
+<h2 id="Cudnn-5-1-5"><a href="#Cudnn-5-1-5" class="headerlink" title="Cudnn 5.1.5"></a>Cudnn 5.1.5</h2><p>Download <a target="_blank" rel="noopener" href="https://developer.nvidia.com/cudnn">cudnn 5.1.5</a> and install</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tar -xzvf cudnn-8.0-linux-x64-v5.1.tgz</span><br><span class="line">sudo cp cuda/include/cudnn.h /usr/<span class="built_in">local</span>/cuda/include</span><br><span class="line">sudo cp cuda/lib64/libcudnn* /usr/<span class="built_in">local</span>/cuda/lib64</span><br><span class="line">sudo chmod a+r /usr/<span class="built_in">local</span>/cuda/include/cudnn.h /usr/<span class="built_in">local</span>/cuda/lib64/libcudnn*</span><br></pre></td></tr></table></figure>
+
+<h2 id="Environment-variables"><a href="#Environment-variables" class="headerlink" title="Environment variables"></a>Environment variables</h2><p>Update ~/.bashrc file</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>Append at the bottom</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=<span class="string">&quot;<span class="variable">$LD_LIBRARY_PATH</span>:/usr/local/cuda/lib64&quot;</span></span><br><span class="line"><span class="built_in">export</span> CUDA_HOME=/usr/<span class="built_in">local</span>/cuda</span><br><span class="line"><span class="built_in">export</span> DYLD_LIBRARY_PATH=<span class="string">&quot;<span class="variable">$DYLD_LIBRARY_PATH</span>:<span class="variable">$CUDA_HOME</span>/lib&quot;</span></span><br><span class="line"><span class="built_in">export</span> PATH=<span class="string">&quot;<span class="variable">$CUDA_HOME</span>/bin:<span class="variable">$PATH</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>Apply updated environment variables to current session</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<h2 id="Tensorflow"><a href="#Tensorflow" class="headerlink" title="Tensorflow"></a>Tensorflow</h2><p>Install bazel</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8&quot;</span> | sudo tee /etc/apt/sources.list.d/bazel.list</span><br><span class="line">curl https://bazel.io/bazel-release.pub.gpg | sudo apt-key add -</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install bazel</span><br><span class="line">sudo apt-get upgrade bazel</span><br></pre></td></tr></table></figure>
+
+<p>Clone branch r0.11</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> -b r0.11 https://github.com/tensorflow/tensorflow</span><br></pre></td></tr></table></figure>
+
+<p>Get your compute capability from <a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-gpus">here</a></p>
+<p>Configure</p>
+<ul>
+<li>yes to gpu support</li>
+<li>set your compute capability</li>
+<li>cuda 8.0</li>
+<li>cudnn 5.1.5</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> tensorflow/</span><br><span class="line">./configure</span><br></pre></td></tr></table></figure>
+
+<p>Compile</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bazel build -c opt --config=cuda //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure>
+
+<p>Build pip wheel</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg</span><br></pre></td></tr></table></figure>
+
+<p>Install tensorflow</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pip install -I --upgrade --force-reinstall /tmp/tensorflow_pkg/tensorflow-0.11*</span><br></pre></td></tr></table></figure>
+
+<p>Test tensorflow</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m tensorflow.models.image.mnist.convolutional</span><br></pre></td></tr></table></figure>
+
+<h2 id="OpenCV-2-4"><a href="#OpenCV-2-4" class="headerlink" title="OpenCV 2.4"></a>OpenCV 2.4</h2><p><a target="_blank" rel="noopener" href="http://opencv.org/downloads.html">Download</a> latest 2.4.x release for linux.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev</span><br></pre></td></tr></table></figure>
+
+<p>Download and extract</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/Itseez/opencv/archive/2.4.13.zip</span><br><span class="line">unzip opencv-2.4.13.zip</span><br></pre></td></tr></table></figure>
+
+<p>Compile</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> opencv-2.4.13</span><br><span class="line">mkdir release</span><br><span class="line"><span class="built_in">cd</span> release</span><br><span class="line">cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/<span class="built_in">local</span> ..</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+
+<p>Install</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Notes"><a href="#Notes" class="headerlink" title="Notes"></a>Notes</h2><p>When running tensorflow within screen, use /bin/bash to execute ~/.bashrc and correctly set all environment variables</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">screen -s -/bin/bash</span><br></pre></td></tr></table></figure>
+
+    
+	</div>
+	<footer class="entry-footer">
+		<div class="entry-meta-footer">
+			<span class="category">
+				
+			</span>
+			<span class="tags">
+				
+			</span>
+		</div>
+	</footer>
+	
+</article>
+
+
+	<hr class="article-devider">
+
+
+
+
+  
+    <article id="post-blog-nodejs-perf" class="post">
+	<footer class="entry-meta-header">
+		<span class="meta-elements date">
+			<a target="_blank" rel="noopener" href="//nodejs-cpu-profiling-production/" class="article-date">
+  <time datetime="2016-09-11T18:00:00.000Z" itemprop="datePublished">2016-09-11</time>
+</a>
+		</span>
+		
+		<span class="meta-elements author">Carl Hopf</span>
+		
+		<div class="commentscount">
+			
+		</div>
+	</footer>
+	
+	<header class="entry-header">
+		
+  
+    <h1 itemprop="name" class="entry-title">
+      <a class="article-title" href="/nodejs-cpu-profiling-production/">
+        Nodejs CPU profiling while in production
+      </a>
+    </h1>
+  
+
+
+	</header>
+	<div class="entry-content">
+		
+    	<p>Every once in a while it’s handy to profile your nodejs server while running in production. This does not allow any profiling technique that would harm performance. Luckily there is linux’s <code>perf</code>!</p>
+<p>The following guide is tested Ubuntu 16.04.</p>
+<h2 id="Prerequisites"><a href="#Prerequisites" class="headerlink" title="Prerequisites"></a>Prerequisites</h2><p><code>linux-tools</code> package for your kernel version must be installed.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install -y linux-tools-common linux-tools-generic linux-tools-`uname -r`</span><br></pre></td></tr></table></figure>
+
+<p>You node process must run with <code>--perf_basic_prof_only_functions</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node --perf_basic_prof_only_functions index.js</span><br></pre></td></tr></table></figure>
+
+<p>Keep in mind that this will write ~2mb per hour to <code>/tmp/perf-&lt;pid&gt;.map</code>!</p>
+<h2 id="Record"><a href="#Record" class="headerlink" title="Record"></a>Record</h2><p>Collect data for $PID, 100 times per second for 30 seconds. Creates <code>perf.data</code> in cwd.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo perf record -p <span class="variable">$PID</span> -F 100 -g -- sleep 30</span><br></pre></td></tr></table></figure>
+
+<p>Give root access to <code>/tmp/perf-&lt;pid&gt;.map</code> and generate stack report</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo chown root /tmp/perf-<span class="variable">$PID</span>.map</span><br><span class="line">sudo perf script &gt; out.nodestacks</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Visualize"><a href="#Visualize" class="headerlink" title="Visualize"></a>Visualize</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">perf report</span><br></pre></td></tr></table></figure>
+
+<p>For a graphic representation try <a target="_blank" rel="noopener" href="https://github.com/brendangregg/FlameGraph/">FlameGraph</a>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> http://github.com/brendangregg/FlameGraph</span><br><span class="line">./FlameGraph/stackcollapse-perf.pl &lt; out.nodestacks | ./FlameGraph/flamegraph.pl &gt; out.nodestacks.svg</span><br></pre></td></tr></table></figure>
+
+<p>Open <code>out.nodestacks.svg</code> and click away ;)</p>
+<h2 id="Read-more"><a href="#Read-more" class="headerlink" title="Read more"></a>Read more</h2><p><a target="_blank" rel="noopener" href="https://sandstorm.io/news/2016-09-30-fiber-bomb-debugging-story">The Mysterious Fiber Bomb Problem: A Debugging Story</a></p>
+<p><a target="_blank" rel="noopener" href="https://yunong.io/2015/11/23/generating-node-js-flame-graphs/">Generating Node.js Flame Graphs</a></p>
+<p><a target="_blank" rel="noopener" href="http://stackoverflow.com/a/27867426">Reading Flame Graphs</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.brendangregg.com/perf.html">Perf Examples</a></p>
+
+    
+	</div>
+	<footer class="entry-footer">
+		<div class="entry-meta-footer">
+			<span class="category">
+				
+			</span>
+			<span class="tags">
+				
+			</span>
+		</div>
+	</footer>
+	
+</article>
+
+
+	<hr class="article-devider">
+
+
+
+
+  
+  
+
+
+
+    </div>
+    
+<footer id="footer">
+
+	<span class="copyright">
+		&copy; 2021 Carl Hopf -
+    <a href="/terms">Terms of Service</a> -
+    <a href="/privacypolicy">Privacy Policy</a> -
+    <a href="/datapolicy">Data Policy</a> -
+    <a href="/impressum">Impressum</a>
+	</span>
+</footer>
+
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

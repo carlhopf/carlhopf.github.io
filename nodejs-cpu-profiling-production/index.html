@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Nodejs CPU profiling while in production | Carl Hopf</title>
+  <meta name="viewport" content="width=device-width">
+  <meta name="description" content="Every once in a while it’s handy to profile your nodejs server while running in production. This does not allow any profiling technique that would harm performance. Luckily there is linux’s perf! The">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nodejs CPU profiling while in production">
+<meta property="og:url" content="https://carlhopf.com/nodejs-cpu-profiling-production/index.html">
+<meta property="og:site_name" content="Carl Hopf">
+<meta property="og:description" content="Every once in a while it’s handy to profile your nodejs server while running in production. This does not allow any profiling technique that would harm performance. Luckily there is linux’s perf! The">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2016-09-11T18:00:00.000Z">
+<meta property="article:modified_time" content="2021-05-12T16:10:02.287Z">
+<meta property="article:author" content="Carl Hopf">
+<meta name="twitter:card" content="summary">
+  
+  
+    <link rel="icon" href="/res/favicon.png">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <div id="container">
+    <div class="mobile-nav-panel">
+	<i class="icon-reorder icon-large"></i>
+</div>
+<header id="header">
+	<h1 class="blog-title">
+		<a href="/">Carl Hopf</a>
+	</h1>
+	<nav class="nav">
+		<ul>
+			
+			<li>
+				<div class="wrap">
+					<a href="/">Home</a>
+				</div>
+			</li>
+			
+			<li>
+				<div class="wrap">
+					<a href="/contact/">Contact</a>
+				</div>
+			</li>
+			
+			
+			
+		</ul>
+	</nav>
+	<div id="search-form-wrap">
+		<form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://carlhopf.com"></form>
+	</div>
+</header>
+
+    <div id="main">
+      <article id="post-blog-nodejs-perf" class="post">
+	<footer class="entry-meta-header">
+		<span class="meta-elements date">
+			<a target="_blank" rel="noopener" href="//nodejs-cpu-profiling-production/" class="article-date">
+  <time datetime="2016-09-11T18:00:00.000Z" itemprop="datePublished">2016-09-11</time>
+</a>
+		</span>
+		
+		<span class="meta-elements author">Carl Hopf</span>
+		
+		<div class="commentscount">
+			
+		</div>
+	</footer>
+	
+	<header class="entry-header">
+		
+  
+    <h1 class="article-title entry-title" itemprop="name">
+      Nodejs CPU profiling while in production
+    </h1>
+  
+
+
+	</header>
+	<div class="entry-content">
+		
+    	<p>Every once in a while it’s handy to profile your nodejs server while running in production. This does not allow any profiling technique that would harm performance. Luckily there is linux’s <code>perf</code>!</p>
+<p>The following guide is tested Ubuntu 16.04.</p>
+<h2 id="Prerequisites"><a href="#Prerequisites" class="headerlink" title="Prerequisites"></a>Prerequisites</h2><p><code>linux-tools</code> package for your kernel version must be installed.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install -y linux-tools-common linux-tools-generic linux-tools-`uname -r`</span><br></pre></td></tr></table></figure>
+
+<p>You node process must run with <code>--perf_basic_prof_only_functions</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node --perf_basic_prof_only_functions index.js</span><br></pre></td></tr></table></figure>
+
+<p>Keep in mind that this will write ~2mb per hour to <code>/tmp/perf-&lt;pid&gt;.map</code>!</p>
+<h2 id="Record"><a href="#Record" class="headerlink" title="Record"></a>Record</h2><p>Collect data for $PID, 100 times per second for 30 seconds. Creates <code>perf.data</code> in cwd.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo perf record -p <span class="variable">$PID</span> -F 100 -g -- sleep 30</span><br></pre></td></tr></table></figure>
+
+<p>Give root access to <code>/tmp/perf-&lt;pid&gt;.map</code> and generate stack report</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo chown root /tmp/perf-<span class="variable">$PID</span>.map</span><br><span class="line">sudo perf script &gt; out.nodestacks</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Visualize"><a href="#Visualize" class="headerlink" title="Visualize"></a>Visualize</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">perf report</span><br></pre></td></tr></table></figure>
+
+<p>For a graphic representation try <a target="_blank" rel="noopener" href="https://github.com/brendangregg/FlameGraph/">FlameGraph</a>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> http://github.com/brendangregg/FlameGraph</span><br><span class="line">./FlameGraph/stackcollapse-perf.pl &lt; out.nodestacks | ./FlameGraph/flamegraph.pl &gt; out.nodestacks.svg</span><br></pre></td></tr></table></figure>
+
+<p>Open <code>out.nodestacks.svg</code> and click away ;)</p>
+<h2 id="Read-more"><a href="#Read-more" class="headerlink" title="Read more"></a>Read more</h2><p><a target="_blank" rel="noopener" href="https://sandstorm.io/news/2016-09-30-fiber-bomb-debugging-story">The Mysterious Fiber Bomb Problem: A Debugging Story</a></p>
+<p><a target="_blank" rel="noopener" href="https://yunong.io/2015/11/23/generating-node-js-flame-graphs/">Generating Node.js Flame Graphs</a></p>
+<p><a target="_blank" rel="noopener" href="http://stackoverflow.com/a/27867426">Reading Flame Graphs</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.brendangregg.com/perf.html">Perf Examples</a></p>
+
+    
+	</div>
+	<footer class="entry-footer">
+		<div class="entry-meta-footer">
+			<span class="category">
+				
+			</span>
+			<span class="tags">
+				
+			</span>
+		</div>
+	</footer>
+	
+    
+<nav id="article-nav">
+  
+    <a href="/tensorflow-install-ubuntu-16.04/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Tensorflow on Ubuntu 16.04, Cuda 8.0 + Cudnn + OpenCV
+        
+      </div>
+    </a>
+  
+  
+    <a href="/dominoes-playdrift/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">
+        
+          Dominoes PlayDrift
+        
+      </div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+    </div>
+    
+<footer id="footer">
+
+	<span class="copyright">
+		&copy; 2021 Carl Hopf -
+    <a href="/terms">Terms of Service</a> -
+    <a href="/privacypolicy">Privacy Policy</a> -
+    <a href="/datapolicy">Data Policy</a> -
+    <a href="/impressum">Impressum</a>
+	</span>
+</footer>
+
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
